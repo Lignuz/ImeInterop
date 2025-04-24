@@ -8,9 +8,10 @@ Supports multiple controls via centralized management.
 ## ✨ Features
 
 - Hook `WM_IME_COMPOSITION` and related IME messages in `WinForms`
-- Capture live composition text (`조합 중 문자열`)
+- Capture live composition text (`조합 중 문자열`) using **native Unicode API** for accurate multi-language support
 - Handle IME start / end events
 - Works with multiple controls via `ImeManager`
+- Uses `ImmGetCompositionStringW` for accurate Unicode handling
 - No external dependencies
 
 ---
@@ -34,7 +35,7 @@ imeManager.Attach(textBox1,
 | `ImeMessageInterceptor.cs` | Hooks IME messages via `NativeWindow` |
 | `ImeManager.cs` | Manages multiple interceptors |
 | `ImeCompositionEventArgs.cs` | Standardized event data |
-| `ImeUtilities.cs` | Utility for language/encoding detection |
+| `ImeUtilities.cs` | Utility for IME context and language info (no longer used for encoding detection) |
 
 ---
 
