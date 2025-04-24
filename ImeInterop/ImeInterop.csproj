@@ -1,16 +1,36 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+	
 	<PropertyGroup>
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<UseWindowsForms>true</UseWindowsForms>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+
+		<!-- NuGet Metadata -->
 		<Authors>Lignuz</Authors>
 		<Company>metaphor0321</Company>
 		<VersionPrefix>0.1.0.1</VersionPrefix>
+		<PackageId>ImeInterop</PackageId>
+		<Description>IME Composition hook for WinForms (WM_IME_COMPOSITION 메시지 처리) - Korean, Japanese, Chineses</Description>
+		<PackageProjectUrl>https://github.com/Lignuz/ImeInterop</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Lignuz/ImeInterop.git</RepositoryUrl>
-		<Copyright>Copyright 2025 metaphor0321, All Rights Reserved.</Copyright>
+		<PackageTags>IME; WinForms; WM_IME_COMPOSITION</PackageTags>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<Copyright>Copyright 2025 metaphor0321, All Rights Reserved.</Copyright>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>true</Pack>
+			<PackagePath>README.md</PackagePath>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	</PropertyGroup>
 
 </Project>
