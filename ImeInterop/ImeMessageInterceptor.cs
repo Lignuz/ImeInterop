@@ -1,19 +1,17 @@
-﻿using System;
+﻿using System.Runtime.InteropServices;
 using System.Text;
-using System.Runtime.InteropServices;
-using System.Windows.Forms;
 
 namespace ImeInterop
 {
     public class ImeMessageInterceptor : NativeWindow
     {
-        public event Action<string>? OnImeComposition;
-        public event Action? OnImeStartComposition;
-        public event Action? OnImeEndComposition;
+        public event EventHandler<ImeCompositionEventArgs>? OnImeComposition;
+        public event EventHandler? OnImeStartComposition;
+        public event EventHandler? OnImeEndComposition;
 
-        const int WM_IME_STARTCOMPOSITION = 0x010D;
-        const int WM_IME_COMPOSITION = 0x010F;
-        const int WM_IME_ENDCOMPOSITION = 0x010E;
+        private const int WM_IME_STARTCOMPOSITION = 0x010D;
+        private const int WM_IME_COMPOSITION = 0x010F;
+        private const int WM_IME_ENDCOMPOSITION = 0x010E;
         private const int GCS_COMPSTR = 0x0008;
 
         public void Attach(Control target)
@@ -32,16 +30,16 @@ namespace ImeInterop
 
             if (m.Msg == WM_IME_STARTCOMPOSITION)
             {
-                OnImeStartComposition?.Invoke();
+                OnImeStartComposition?.Invoke(this, EventArgs.Empty);
             }
             else if (m.Msg == WM_IME_COMPOSITION)
             {
                 string compositionText = GetImeString(m.HWnd, GCS_COMPSTR);
-                OnImeComposition?.Invoke(compositionText);
+                OnImeComposition?.Invoke(this, new ImeCompositionEventArgs(compositionText));
             }
             else if (m.Msg == WM_IME_ENDCOMPOSITION)
             {
-                OnImeEndComposition?.Invoke();
+                OnImeEndComposition?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -58,7 +56,7 @@ namespace ImeInterop
                 byte[] buffer = new byte[size];
                 ImmGetCompositionString(hIMC, type, buffer, size);
 
-                string encodingName = GetInputLanguageEncoding();
+                string encodingName = ImeUtilities.GetInputLanguageEncoding();
                 try
                 {
                     return Encoding.GetEncoding(encodingName).GetString(buffer).TrimEnd('\0');
@@ -74,34 +72,8 @@ namespace ImeInterop
             }
         }
 
-        private string GetInputLanguageEncoding()
-        {
-            IntPtr hKL = GetKeyboardLayout(GetCurrentThreadId());
-            int langId = (ushort)(hKL.ToInt64() & 0xFFFF);
-
-            return langId switch
-            {
-                0x0412 => "ks_c_5601-1987", // Korean
-                0x0411 => "shift_jis",      // Japanese
-                0x0804 => "gb2312",         // Chinese (Simplified)
-                0x0404 => "big5",           // Chinese (Traditional)
-                _ => "utf-8",
-            };
-        }
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetKeyboardLayout(uint idThread);
-
-        [DllImport("kernel32.dll")]
-        private static extern uint GetCurrentThreadId();
-
-        [DllImport("imm32.dll")]
-        private static extern IntPtr ImmGetContext(IntPtr hWnd);
-
-        [DllImport("imm32.dll")]
-        private static extern bool ImmReleaseContext(IntPtr hWnd, IntPtr hIMC);
-
-        [DllImport("imm32.dll")]
-        private static extern int ImmGetCompositionString(IntPtr hIMC, int dwIndex, byte[] lpBuf, int dwBufLen);
+        [DllImport("imm32.dll")] private static extern IntPtr ImmGetContext(IntPtr hWnd);
+        [DllImport("imm32.dll")] private static extern bool ImmReleaseContext(IntPtr hWnd, IntPtr hIMC);
+        [DllImport("imm32.dll")] private static extern int ImmGetCompositionString(IntPtr hIMC, int dwIndex, byte[] lpBuf, int dwBufLen);
     }
 }
