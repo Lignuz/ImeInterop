@@ -8,10 +8,11 @@ Supports multiple controls via centralized management.
 ## ✨ Features
 
 - Hook `WM_IME_COMPOSITION` and related IME messages in `WinForms`
-- Capture live composition text (`조합 중 문자열`) using **native Unicode API** for accurate multi-language support
-- Handle IME start / end events
+- Capture live composition text (`조합 중 문자열`), including **empty string updates during deletion**
+- Detect composition end via both `WM_IME_ENDCOMPOSITION` and when **composition string is cleared**
+- Use Unicode-safe `ImmGetCompositionStringW` API for accurate multi-language IME support
+- Handle IME start / end events reliably
 - Works with multiple controls via `ImeManager`
-- Uses `ImmGetCompositionStringW` for accurate Unicode handling
 - No external dependencies
 
 ---
@@ -28,11 +29,21 @@ imeManager.Attach(textBox1,
 
 ---
 
+## 🧠 IME Composition Flow
+
+- `OnImeStartComposition`: Triggered when composition begins (WM_IME_STARTCOMPOSITION)
+- `OnImeComposition`: Triggered on every composition update — **including empty string** (e.g. user pressed Backspace)
+- `OnImeEndComposition`: Triggered either:
+  - When WM_IME_ENDCOMPOSITION is received
+  - Or when the composition string becomes empty
+
+---
+
 ## 🧩 Components
 
 | File | Purpose |
 |------|---------|
-| `ImeMessageInterceptor.cs` | Hooks IME messages via `NativeWindow` |
+| `ImeMessageInterceptor.cs` | Hooks IME messages and processes composition flow with Unicode support |
 | `ImeManager.cs` | Manages multiple interceptors |
 | `ImeCompositionEventArgs.cs` | Standardized event data |
 | `ImeUtilities.cs` | Utility for IME context and language info (no longer used for encoding detection) |
