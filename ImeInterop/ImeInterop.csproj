@@ -5,6 +5,12 @@
 		<UseWindowsForms>true</UseWindowsForms>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<Authors>Lignuz</Authors>
+		<Company>metaphor0321</Company>
+		<VersionPrefix>0.1.0.1</VersionPrefix>
+		<RepositoryUrl>https://github.com/Lignuz/ImeInterop.git</RepositoryUrl>
+		<Copyright>Copyright 2025 metaphor0321, All Rights Reserved.</Copyright>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	</PropertyGroup>
 
 </Project>
