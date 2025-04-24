@@ -20,58 +20,31 @@ namespace ImeInterop
                 target.HandleCreated += (s, e) => AssignHandle(target.Handle);
             else
                 AssignHandle(target.Handle);
-
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 
         protected override void WndProc(ref Message m)
         {
-            base.WndProc(ref m);
-
             if (m.Msg == WM_IME_STARTCOMPOSITION)
             {
                 OnImeStartComposition?.Invoke(this, EventArgs.Empty);
             }
             else if (m.Msg == WM_IME_COMPOSITION)
             {
-                // string compositionText = GetImeString(m.HWnd, GCS_COMPSTR);
                 string compositionText = GetImeStringUnicode(m.HWnd, GCS_COMPSTR);
                 OnImeComposition?.Invoke(this, new ImeCompositionEventArgs(compositionText));
+
+                // 조합 문자열이 사라졌다면 "조합 종료"로 간주
+                if (string.IsNullOrEmpty(compositionText))
+                {
+                    OnImeEndComposition?.Invoke(this, EventArgs.Empty);
+                }
             }
             else if (m.Msg == WM_IME_ENDCOMPOSITION)
             {
                 OnImeEndComposition?.Invoke(this, EventArgs.Empty);
             }
-        }
 
-        // deprecated
-        private string GetImeString(IntPtr hWnd, int type)
-        {
-            IntPtr hIMC = ImmGetContext(hWnd);
-            if (hIMC == IntPtr.Zero) return string.Empty;
-
-            try
-            {
-                int size = ImmGetCompositionString(hIMC, type, null, 0);
-                if (size <= 0) return string.Empty;
-
-                byte[] buffer = new byte[size];
-                ImmGetCompositionString(hIMC, type, buffer, size);
-
-                string encodingName = ImeUtilities.GetInputLanguageEncoding();
-                try
-                {
-                    return Encoding.GetEncoding(encodingName).GetString(buffer).TrimEnd('\0');
-                }
-                catch
-                {
-                    return Encoding.UTF8.GetString(buffer).TrimEnd('\0');
-                }
-            }
-            finally
-            {
-                ImmReleaseContext(hWnd, hIMC);
-            }
+            base.WndProc(ref m);
         }
 
         public static string GetImeStringUnicode(IntPtr hWnd, int type)
@@ -88,7 +61,10 @@ namespace ImeInterop
                 try
                 {
                     ImmGetCompositionStringW(hIMC, type, buffer, size);
-                    return Marshal.PtrToStringUni(buffer, size / 2); // size is in bytes, UTF-16 is 2 bytes per char
+
+                    // size is in bytes, UTF-16 is 2 bytes per char
+                    return Marshal.PtrToStringUni(buffer, size / 2) ?? string.Empty;
+
                 }
                 finally
                 {
@@ -103,10 +79,7 @@ namespace ImeInterop
 
         [DllImport("imm32.dll")] private static extern IntPtr ImmGetContext(IntPtr hWnd);
         [DllImport("imm32.dll")] private static extern bool ImmReleaseContext(IntPtr hWnd, IntPtr hIMC);
-        [DllImport("imm32.dll")] private static extern int ImmGetCompositionString(IntPtr hIMC, int dwIndex, byte[] lpBuf, int dwBufLen);
-
         [DllImport("imm32.dll", CharSet = CharSet.Unicode)]
         private static extern int ImmGetCompositionStringW(IntPtr hIMC, int dwIndex, IntPtr lpBuf, int dwBufLen);
-
     }
 }

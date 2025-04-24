@@ -9,7 +9,7 @@
 		<!-- NuGet Metadata -->
 		<Authors>Lignuz</Authors>
 		<Company>metaphor0321</Company>
-		<VersionPrefix>0.1.1.0</VersionPrefix>
+		<VersionPrefix>0.1.2.0</VersionPrefix>
 		<PackageId>ImeInterop</PackageId>
 		<Description>IME Composition hook for WinForms (WM_IME_COMPOSITION 메시지 처리)</Description>
 		<PackageProjectUrl>https://github.com/Lignuz/ImeInterop</PackageProjectUrl>
