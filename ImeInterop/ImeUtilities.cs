@@ -203,11 +203,36 @@ namespace ImeInterop
                 return ("Unknown", "Unknown");
         }
 
-        public static (int LangId, string LanguageName, string CultureTag) GetKeyboardLanguageInfo()
+        public static (int LangId, string LanguageName, string CultureTag, string EncodingName) GetKeyboardLanguageInfo()
         {
             ushort langId = GetKeyboardLangId();
             (string LanguageName, string CultureTag) = GetLanguageInfo(langId);
-            return (langId, LanguageName, CultureTag);
+            string EncodingName = GetEncodingNameFromLangId(langId);
+            return (langId, LanguageName, CultureTag, EncodingName);
+        }
+
+        public static string GetEncodingNameFromLangId(ushort langId)
+        {
+            return langId switch
+            {
+                0x0412 => "ks_c_5601-1987", // Korean
+                0x0411 => "shift_jis",      // Japanese
+                0x0804 => "gb2312",         // Chinese (Simplified)
+                0x0404 => "big5",           // Chinese (Traditional)
+                0x0419 => "windows-1251",   // Russian
+                0x0408 => "windows-1253",   // Greek
+                0x040d => "windows-1255",   // Hebrew
+                0x041e => "windows-874",    // Thai
+                0x0415 => "windows-1250",   // Polish
+                ushort id when (id >= 0x0401 && id <= 0x3c01) => "windows-1256", // Arabic region
+                _ => "utf-8", // Default fallback
+            };
+        }
+
+        public static string GetInputLanguageEncoding()
+        {
+            ushort langId = GetKeyboardLangId();
+            return GetEncodingNameFromLangId(langId);
         }
 
         public static ushort GetKeyboardLangId()
@@ -215,20 +240,6 @@ namespace ImeInterop
             IntPtr hKL = GetKeyboardLayout(GetCurrentThreadId());
             ushort langId = (ushort)(hKL.ToInt64() & 0xFFFF);
             return langId;
-        }
-
-        public static string GetInputLanguageEncoding()
-        {
-            int langId = GetKeyboardLangId();
-
-            return langId switch
-            {
-                0x0412 => "ks_c_5601-1987", // Korean
-                0x0411 => "shift_jis",      // Japanese
-                0x0804 => "gb2312",         // Chinese (Simplified)
-                0x0404 => "big5",           // Chinese (Traditional)
-                _ => "utf-8",
-            };
         }
 
         [DllImport("user32.dll")]
